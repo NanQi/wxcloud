@@ -2,7 +2,7 @@ const success = (ctx) => {
     return {
         code: 0,
         message: 'success',
-        data: ctx.data.data
+        data: ctx.data
     }
 }
 

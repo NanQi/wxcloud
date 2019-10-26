@@ -3,16 +3,58 @@ const cloud = require('wx-server-sdk');
 const db = cloud.database();
 
 /**
- * 查询处理
+ * 查询一条数据
  * @param  {[type]} sheet      [数据表名称]
- * @param  {Object} [limit={}] [查询条件]
+ * @param  {Object} [where={}] [查询条件]
  */
-const get = (sheet, limit = {}) => {
+async function item(sheet, where = {}) {
   try {
-    return db.collection(sheet).where(limit.where).get();
+    let info = await db.collection(sheet).where(where).get();
+    if (!!info.data && info.data.length >= 1) {
+      return info.data[0]
+    }
   } catch (e) {
     console.error(e);
   }
+}
+
+/**
+ * 查询多条数据
+ * @param  {[type]} sheet      [数据表名称]
+ * @param  {Object} [where={}] [查询条件]
+ * @param  {[type]} order      [排序]
+ * @param  {[type]} page       [页码]
+ * @param  {[type]} limit      [每页数量]
+ */
+async function list(sheet, where = {}, order = '', page = 1, limit = 20) {
+  try {
+    let query = await db.collection(sheet).where(where);
+    if (!!order) {
+      let orderList = order.split(' ', 2)
+      if (orderList.length == 1) {
+        orderList.push('asc')
+      }
+      query = query.orderBy(orderList[0], orderList[1])
+    }
+    if (limit !== -1) {
+      query = query.skip((page - 1) * limit).limit(limit);
+    }
+    
+    let list = query.get();
+    return list.data;
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+/**
+ * 查询多条数据
+ * @param  {[type]} sheet      [数据表名称]
+ * @param  {Object} [where={}] [查询条件]
+ * @param  {[type]} order      [排序]
+ */
+function all (sheet, where = {}, order = '') {
+  return list(sheet, where, order, 1, -1)
 }
 
 /**
@@ -34,12 +76,12 @@ const add = (sheet, params) => {
  * 编辑处理
  * @param  {[type]} sheet      [数据表名称]
  * @param  {[type]} params     [参数]
- * @param  {Object} [limit={}] [条件]
+ * @param  {Object} [where={}] [条件]
  */
-const edit = (sheet, params, limit = {}) => {
+const edit = (sheet, params, where = {}) => {
   delete params._id;
   try {
-    return db.collection(sheet).where(limit.where).update({
+    return db.collection(sheet).where(where).update({
       data: params
     });
   } catch (e) {
@@ -50,19 +92,20 @@ const edit = (sheet, params, limit = {}) => {
 /**
  * 删除处理
  * @param  {[type]} sheet      [数据表名称]
- * @param  {[type]} params     [参数]
- * @param  {Object} [limit={}] [条件]
+ * @param  {Object} [where={}] [条件]
  */
-const remove = (sheet, params, limit = {}) => {
+const remove = (sheet, where = {}) => {
   try {
-    return db.collection(sheet).where(limit.where).remove();
+    return db.collection(sheet).where(where).remove();
   } catch (e) {
     console.error(e);
   }
 }
 
 module.exports = {
-    get,
+    item,
+    list,
+    all,
     add,
     edit,
     remove

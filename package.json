@@ -1,6 +1,6 @@
 {
     "name": "nanqi-wxcloud",
-    "version": "1.0.0",
+    "version": "1.0.7",
     "description": "小程序云开发",
     "main": "./src/index.js",
     "scripts": {
