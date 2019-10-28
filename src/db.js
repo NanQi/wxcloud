@@ -28,7 +28,7 @@ async function item(sheet, where = {}) {
  */
 async function list(sheet, where = {}, order = '', page = 1, limit = 20) {
   try {
-    let query = await db.collection(sheet).where(where);
+    let query = db.collection(sheet).where(where);
     if (!!order) {
       let orderList = order.split(' ', 2)
       if (orderList.length == 1) {
@@ -40,7 +40,7 @@ async function list(sheet, where = {}, order = '', page = 1, limit = 20) {
       query = query.skip((page - 1) * limit).limit(limit);
     }
     
-    let list = query.get();
+    let list = await query.get();
     return list.data;
   } catch (e) {
     console.error(e);
@@ -78,7 +78,7 @@ const add = (sheet, params) => {
  * @param  {[type]} params     [参数]
  * @param  {Object} [where={}] [条件]
  */
-const edit = (sheet, params, where = {}) => {
+const save = (sheet, params, where = {}) => {
   delete params._id;
   try {
     return db.collection(sheet).where(where).update({
@@ -107,6 +107,6 @@ module.exports = {
     list,
     all,
     add,
-    edit,
+    save,
     remove
 }
